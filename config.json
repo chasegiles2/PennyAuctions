@@ -1,0 +1,20 @@
+{
+    "number_of_workers":5,
+	"link_generator_home_url":"http://www.quibids.com/en/",
+	"chrome_driver_path":"C:\\Users\\Chase\\OneDrive\\Documents\\Python\\chromedriver_win32\\chromedriver.exe",
+	"csv":{
+		"active":false,
+		"path":""
+	},
+	"s3":{
+		"active":true,
+		"bucket":"38783070318518296997"
+	},
+	"database":{
+		"active":false,
+		"host":"localhost",
+		"name":"auctiondb",
+		"user":"auction_user",
+		"password":"gJ^4019B!b#f"
+	}
+}

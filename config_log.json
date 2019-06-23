@@ -1,0 +1,33 @@
+{
+	"version": 1,
+	"formatters": {
+		"detailed": {
+			"class": "logging.Formatter",
+			"format": "%(asctime)s %(name)-15s %(levelname)-8s %(process)d %(processName)-10s %(message)s"
+		}
+	},
+	"handlers": {
+		"console": {
+			"class": "logging.StreamHandler",
+			"level": "INFO",
+			"formatter": "detailed"
+		},
+		"file": {
+			"class": "logging.FileHandler",
+			"filename": "auctions.log",
+			"mode": "w",
+			"formatter": "detailed"
+		},
+		"errors": {
+			"class": "logging.FileHandler",
+			"filename": "auctions-errors.log",
+			"mode": "w",
+			"level": "ERROR",
+			"formatter": "detailed"
+		}
+	},
+	"root": {
+		"level": "DEBUG",
+		"handlers": ["console", "file", "errors"]
+	}
+}
