@@ -7,11 +7,13 @@ import logging
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 # import psycopg2
 from io import StringIO
 import boto3
 
+from lxml import etree
+from lxml import html
 
 class Auction:
     # contains all information about an auction
@@ -89,34 +91,31 @@ class Auction:
 
         # for i in range(20):
         while True:
-            start_perf_time_1 = time.perf_counter()
+            start_perf_time = time.perf_counter()
+
             current_time = time.time()
             if seconds_till_refresh < (current_time - start_time):
                 self.driver.refresh()
                 logging.info("Auction Page refreshed")
                 # add additional time onto seconds_till_refresh because start_time is static
                 seconds_till_refresh = seconds_till_refresh + random.randint(refresh_lower_bound, refresh_upper_bound)
-            end_perf_time_1 = time.perf_counter()
 
-            start_perf_time_2 = time.perf_counter()
             retrieval_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            html = self.driver.page_source
-            soup = BeautifulSoup(html, 'lxml')
-            end_perf_time_2 = time.perf_counter()
+            html_string = self.driver.page_source
+            tree = html.document_fromstring(html_string)
 
-            start_perf_time_3 = time.perf_counter()
             try:
                 # check if there is an auction winner
-                if soup.find('p', {'class': 'won_price'}):
-                    winner = soup.find('span', {'class': 'won_username'}).string
-                    final_price = soup.find('p', {'class': 'won_price'}).string
+                if tree.find_class('won_price'):
+                    winner = tree.find_class('won_username')[0].text_content()
+                    final_price = tree.find_class('won_price')[0].text_content()
 
                     # verify there is a digit
                     if bool(re.search(r'\d', final_price)):
                         # strip the dollar sign from final and actual price
                         final_price = float(final_price.strip()[1:])
                         if winner != 'No Winner':  # no price breakdown exists if there is no winner
-                            actual_price = float(soup.find('ul', {'class': 'price-breakdown'}).find('span', {'class': 'float-right'}).string.strip()[1:])
+                            actual_price = float(tree.find_class('price-breakdown')[0].find_class('float-right')[0].text_content().strip()[1:])
                         else:
                             actual_price = 0.0
 
@@ -126,43 +125,37 @@ class Auction:
                         logging.info("End of auction: %s", self.auction_id)
                         self.driver.quit()
                         break
-                # check if auction has been cancelled
-                elif soup.find('h3', text="Auction Cancelled"):
-                    logging.info("Auction cancelled: %s", self.auction_id)
-                    break
+                # # check if auction has been cancelled
+                # elif soup.find('h3', text="Auction Cancelled"):
+                #     logging.info("Auction cancelled: %s", self.auction_id)
+                #     break
                 else:
-                    perf_time_3_1 = time.perf_counter()
                     # find the current auction time
                     #   use * because timer changes text when it reaches 10 seconds
-                    seconds_remaining = get_sec(soup.find('p', {'class': re.compile('time large-timer*')}).string)
-
-                    perf_time_3_2 = time.perf_counter()
+                    seconds_remaining = get_sec(tree.xpath('//p[contains(@class, "time large-timer")]')[0].text_content())
 
                     # find the lock state
-                    if soup.find('div', {'class': 'tooltip-bottom locked big', 'style': 'display: block;'}):
+                    if tree.xpath('//div[contains(@class, "tooltip-bottom locked big")]'):
                         lock_state = 'locked'
                     else:
                         lock_state = 'unlocked'
 
-                    perf_time_3_3= time.perf_counter()
-
-                    # find the bid-history table and take only the last 3 records
-                    bids = soup.find('table', {'id': 'bid-history'}).find_all('tr')[:2]
-
-                    perf_time_3_4 = time.perf_counter()
+                    # find the bid-history table and take only the last 2 records
+                    bid_history_table = tree.get_element_by_id('bid-history')
+                    bids = bid_history_table.xpath('.//tr')[:2]
 
                     # loop through the records in reverse order
                     for x in bids[::-1]:
                         # find all of the cells in the record
-                        elements = x.find_all('td')
+                        elements = x.xpath('.//td')
 
                         # search for digit in the element[2] (bid amount) ; if there is no digit it is an empty record
-                        if re.search(r'\d', elements[2].string):
+                        if re.search(r'\d', elements[2].text_content()):
                             bid = {
                                 'bid_number': self.bid_count,
-                                'bidder': str(elements[1].string), # important to convert to a str or it takes up a lot of memory
-                                'price': float(elements[2].string.strip()[1:]),
-                                'bid_method': str(elements[3].string), # important to convert to a str or it takes up a lot of memory
+                                'bidder': str(elements[1].text_content()), # important to convert to a str or it takes up a lot of memory
+                                'price': float(elements[2].text_content().strip()[1:]),
+                                'bid_method': str(elements[3].text_content()), # important to convert to a str or it takes up a lot of memory, maybe not the case after switching to lxml
                                 'seconds_remaining': previous_seconds_remaining, # seconds remaining will be blank if bids already exist after watch is started which is the result wanted
                                 'retrieval_time': retrieval_time,
                                 'lock_state': lock_state
@@ -173,23 +166,19 @@ class Auction:
                                 logging.debug("Bid added: %s", bid)
                                 self.bid_count += 1
                     previous_seconds_remaining = seconds_remaining
-                end_perf_time_3 = time.perf_counter()
+                end_perf_time = time.perf_counter()
 
-                time_1 = str(end_perf_time_1 - start_perf_time_1)
-                time_2 = str(end_perf_time_2 - start_perf_time_2)
-                time_3 = str(end_perf_time_3 - start_perf_time_3)
-                time_3_1 = str(perf_time_3_1 - start_perf_time_3)
-                time_3_2 = str(perf_time_3_2 - perf_time_3_1)
-                time_3_3 = str(perf_time_3_3 - perf_time_3_2)
-                time_3_4 = str(perf_time_3_4 - perf_time_3_3)
-                time_3_5 = str(end_perf_time_3 - perf_time_3_4)
-                logging.debug("Performance: " + time_1 + "," + time_2 + "," + time_3 + "," + time_3_1 + "," + time_3_2 + "," + time_3_3 + "," + time_3_4 + "," + time_3_5)
+                performance_time = end_perf_time - start_perf_time
+                sleep_time = 0.9 - performance_time # want to check at least once per second
+                logging.debug("Performance,Sleep: " + str(performance_time) + ',' + str(sleep_time))
+                time.sleep(sleep_time)
 
-                time.sleep(0.5)
             except AttributeError as e:
                 print(e)
                 print(e.with_traceback())
                 pass
+            except Exception as e:
+                logging.error(e)
 
     def store_bid_history_to_csv(self, path):
         # stores all information including all past bids into a csv file        
