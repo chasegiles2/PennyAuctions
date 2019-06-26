@@ -169,7 +169,10 @@ class Auction:
                 end_perf_time = time.perf_counter()
 
                 performance_time = end_perf_time - start_perf_time
-                sleep_time = 0.9 - performance_time # want to check at least once per second
+                if performance_time < 0.9:
+                    sleep_time = 0.9 - performance_time # want to check at least once per second
+                else:
+                    sleep_time = 0
                 logging.debug("Performance,Sleep: " + str(performance_time) + ',' + str(sleep_time))
                 time.sleep(sleep_time)
 
