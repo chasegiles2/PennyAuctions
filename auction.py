@@ -169,7 +169,10 @@ class Auction:
                 end_perf_time = time.perf_counter()
 
                 performance_time = end_perf_time - start_perf_time
-                if performance_time < 0.9:
+
+                if int(seconds_remaining) >= (60 * 5) and self.bid_count == 0:
+                    sleep_time = 60
+                elif performance_time < 0.9:
                     sleep_time = 0.9 - performance_time # want to check at least once per second
                 else:
                     sleep_time = 0
