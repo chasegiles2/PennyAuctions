@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import link_generator as lg
 import auction as a
 
