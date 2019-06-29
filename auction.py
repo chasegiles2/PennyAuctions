@@ -135,14 +135,14 @@ class Auction:
                     seconds_remaining = get_sec(tree.xpath('//p[contains(@class, "time large-timer")]')[0].text_content())
 
                     # find the lock state
-                    if tree.xpath('//div[contains(@class, "tooltip-bottom locked big")]'):
+                    if tree.xpath('//div[contains(@class, "tooltip-bottom locked big") and contains(@style, "display: block;")]'):
                         lock_state = 'locked'
                     else:
                         lock_state = 'unlocked'
 
-                    # find the bid-history table and take only the last 2 records
+                    # find the bid-history table and take only the last 4 records
                     bid_history_table = tree.get_element_by_id('bid-history')
-                    bids = bid_history_table.xpath('.//tr')[:2]
+                    bids = bid_history_table.xpath('.//tr')[:4]
 
                     # loop through the records in reverse order
                     for x in bids[::-1]:
@@ -170,21 +170,27 @@ class Auction:
 
                 performance_time = end_perf_time - start_perf_time
 
-                if int(seconds_remaining) >= (60 * 5) and self.bid_count == 0:
-                    sleep_time = 60
-                elif performance_time < 0.9:
-                    sleep_time = 0.9 - performance_time # want to check at least once per second
+                logging.debug(type(seconds_remaining))
+                logging.debug(seconds_remaining)
+
+                if type(seconds_remaining) != "NoneType":
+                    if seconds_remaining >= (60 * 5) and self.bid_count == 0:
+                        sleep_time = 60
+                    elif performance_time < 0.9:
+                        sleep_time = 0.9 - performance_time # want to check at least once per second
+                    else:
+                        sleep_time = 0
                 else:
-                    sleep_time = 0
+                    sleep_time = 1
                 logging.debug("Performance,Sleep: " + str(performance_time) + ',' + str(sleep_time))
                 time.sleep(sleep_time)
 
             except AttributeError as e:
-                print(e)
-                print(e.with_traceback())
-                pass
+                logging.error(e)
+                logging.error(e.with_traceback())
             except Exception as e:
                 logging.error(e)
+                logging.error(e.with_traceback())
 
     def store_bid_history_to_csv(self, path):
         # stores all information including all past bids into a csv file        
