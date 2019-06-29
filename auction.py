@@ -170,9 +170,6 @@ class Auction:
 
                 performance_time = end_perf_time - start_perf_time
 
-                logging.debug(type(seconds_remaining))
-                logging.debug(seconds_remaining)
-
                 if type(seconds_remaining) != "NoneType":
                     if seconds_remaining >= (60 * 5) and self.bid_count == 0:
                         sleep_time = 60
