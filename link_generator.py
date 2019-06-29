@@ -2,7 +2,9 @@ import time
 import random
 import logging
 
-from bs4 import BeautifulSoup
+from lxml import etree
+from lxml import html
+# from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
@@ -23,6 +25,15 @@ class LinkGenerator:
         self.links_generated = []
 
     def generate_links(self):
+        def get_sec(time_str):
+            # returns seconds from the hh:mm:ss format
+            try:
+                h, m, s = time_str.split(':')
+                return int(h) * 3600 + int(m) * 60 + int(s)
+            except ValueError:
+                # auction has ended and string is most likely 'ended'
+                pass
+
         # opens web page
         try:
             self.driver.get(self.link)
@@ -42,23 +53,23 @@ class LinkGenerator:
 
         logging.info("Generating links at %s", self.driver.current_url)
 
-        html = self.driver.page_source
-        if html:
-            soup = BeautifulSoup(html, 'html.parser')
+        html_string = self.driver.page_source
+        if html_string:
+            tree = html.document_fromstring(html_string)
 
             # locate container that holds the auctions and then grab the links
-            auction_spots = soup.find('div', {'id': 'spots'})
-            for auction in auction_spots.find_all('div', {'class': 'auction-item-wrapper normal'}):
-                auction_link = auction.find('a').get('href')
+            auction_spots = tree.xpath('//div[contains(@class, "auction-item-wrapper normal")]')
+            for auction in auction_spots:
+                auction_link = auction.xpath('.//a')[0].get('href')
                 logging.debug("Auction link found: %s", auction_link)
 
-                current_price = float(auction.find('h3').get_text().strip()[1:])
-                if current_price <= 0.02:
-                    # there are not that many bids so we can start watching the auction without missing any information
-                    self.links_generated.append(self.link + auction_link)  # added home page url to get full url
+                current_price = float(auction.xpath('.//h3')[0].text_content().strip()[1:])
+                seconds_remaining = get_sec(auction.xpath('.//h2[contains(@class, "time bold")]')[0].text_content())
 
-            # potential to add random sleep time here??
-            # time.sleep(random.randint(5,60))
+                if type(seconds_remaining) != "NoneType": # auction could be ended and not displaying a time
+                    if seconds_remaining <= (60 * 5) or current_price > 0:
+                        self.links_generated.append(self.link + auction_link)  # added home page url to get full url
+
         else:
             logging.critical("html was empty from %s", self.driver.current_url)
         self.driver.quit()

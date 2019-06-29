@@ -170,15 +170,10 @@ class Auction:
 
                 performance_time = end_perf_time - start_perf_time
 
-                if type(seconds_remaining) != "NoneType":
-                    if seconds_remaining >= (60 * 5) and self.bid_count == 0:
-                        sleep_time = 60
-                    elif performance_time < 0.9:
-                        sleep_time = 0.9 - performance_time # want to check at least once per second
-                    else:
-                        sleep_time = 0
+                if performance_time < 0.9:
+                    sleep_time = 0.9 - performance_time # want to check at least once per second
                 else:
-                    sleep_time = 1
+                    sleep_time = 0
                 logging.debug("Performance,Sleep: " + str(performance_time) + ',' + str(sleep_time))
                 time.sleep(sleep_time)
 
