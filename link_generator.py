@@ -57,7 +57,6 @@ class LinkGenerator:
         if html_string:
             tree = html.document_fromstring(html_string)
 
-            # locate container that holds the auctions and then grab the links
             auction_spots = tree.xpath('//div[contains(@class, "auction-item-wrapper normal")]')
             for auction in auction_spots:
                 auction_link = auction.xpath('.//a')[0].get('href')
@@ -69,7 +68,7 @@ class LinkGenerator:
                 if seconds_remaining is not None: # auction could be ended and not displaying a time
                     if seconds_remaining <= (60 * 5) or current_price > 0:
                         self.links_generated.append(self.link + auction_link)  # added home page url to get full url
-
+            self.driver.quit()
         else:
             logging.critical("html was empty from %s", self.driver.current_url)
         self.driver.quit()
