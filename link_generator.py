@@ -66,7 +66,7 @@ class LinkGenerator:
                 current_price = float(auction.xpath('.//h3')[0].text_content().strip()[1:])
                 seconds_remaining = get_sec(auction.xpath('.//h2[contains(@class, "time bold")]')[0].text_content())
 
-                if type(seconds_remaining) != "NoneType": # auction could be ended and not displaying a time
+                if seconds_remaining is not None: # auction could be ended and not displaying a time
                     if seconds_remaining <= (60 * 5) or current_price > 0:
                         self.links_generated.append(self.link + auction_link)  # added home page url to get full url
 
