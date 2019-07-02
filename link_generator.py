@@ -68,7 +68,6 @@ class LinkGenerator:
                 if seconds_remaining is not None: # auction could be ended and not displaying a time
                     if seconds_remaining <= (60 * 5) or current_price > 0:
                         self.links_generated.append(self.link + auction_link)  # added home page url to get full url
-            self.driver.quit()
         else:
             logging.critical("html was empty from %s", self.driver.current_url)
         self.driver.quit()
