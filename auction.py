@@ -7,7 +7,6 @@ import logging
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-# from bs4 import BeautifulSoup
 # import psycopg2
 from io import StringIO
 import boto3
@@ -24,7 +23,6 @@ class Auction:
         options.add_argument('--disable-gpu')
         options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36')
         self.driver = webdriver.Chrome(executable_path=path_to_chromedriver, chrome_options=options)
-        # self.driver.set_page_load_timeout(10)
 
         link_parsed = link.split('-', 3)
         self.link = link
@@ -89,7 +87,6 @@ class Auction:
         logging.debug("Refresh set to %s seconds for auction: %s", seconds_till_refresh, self.auction_id)
         start_time = time.time()
 
-        # for i in range(20):
         while True:
             start_perf_time = time.perf_counter()
 

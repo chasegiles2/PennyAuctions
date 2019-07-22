@@ -4,7 +4,6 @@ import logging
 
 from lxml import etree
 from lxml import html
-# from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 

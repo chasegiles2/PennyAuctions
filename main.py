@@ -23,14 +23,12 @@ def worker_main(worker_queue, completed_queue, log_queue, config):
     root.addHandler(qh)
 
     c = config
-    # for i in  range(100):
     while True:
         item = worker_queue.get(True)
         
         # do work
         auction = a.Auction(item, c["chrome_driver_path"])
         auction.watch()
-        # cProfile.runctx('auction.watch()', globals(), locals(), 'profile')
 
         # store to sources based on config settings
         if c["csv"]["active"]:
@@ -93,7 +91,6 @@ def main():
 
     inserted_list = []
 
-    # for i in range(3):
     while True:
         update_queue(worker_queue, inserted_list, config)
 
