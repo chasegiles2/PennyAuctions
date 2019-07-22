@@ -140,9 +140,9 @@ class Auction:
                     else:
                         lock_state = 'unlocked'
 
-                    # find the bid-history table and take only the last 4 records
+                    # find the bid-history table and take only the last 6 records
                     bid_history_table = tree.get_element_by_id('bid-history')
-                    bids = bid_history_table.xpath('.//tr')[:4]
+                    bids = bid_history_table.xpath('.//tr')[:6]
 
                     # loop through the records in reverse order
                     for x in bids[::-1]:

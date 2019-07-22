@@ -23,7 +23,7 @@ def worker_main(worker_queue, completed_queue, log_queue, config):
     root.addHandler(qh)
 
     c = config
-    # for i in range(100):
+    # for i in  range(100):
     while True:
         item = worker_queue.get(True)
         
