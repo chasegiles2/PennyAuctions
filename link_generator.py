@@ -4,7 +4,6 @@ import logging
 
 from lxml import etree
 from lxml import html
-# from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
@@ -50,11 +49,13 @@ class LinkGenerator:
             logging.critical("error opening site: %s", self.link)
             logging.critical(e)
 
-
         logging.info("Generating links at %s", self.driver.current_url)
 
-        html_string = self.driver.page_source
-        if html_string:
+        try:
+            html_string = self.driver.page_source
+        except Exception as e:
+            logging.critical("html was empty from %s", self.driver.current_url)
+        else:
             tree = html.document_fromstring(html_string)
 
             auction_spots = tree.xpath('//div[contains(@class, "auction-item-wrapper normal")]')
@@ -66,8 +67,7 @@ class LinkGenerator:
                 seconds_remaining = get_sec(auction.xpath('.//h2[contains(@class, "time bold")]')[0].text_content())
 
                 if seconds_remaining is not None: # auction could be ended and not displaying a time
-                    if seconds_remaining <= (60 * 5) or current_price > 0:
+                    if (current_price > 0 and current_price < 0.05) or (seconds_remaining >= (20) and seconds_remaining <= (60 * 4)):
                         self.links_generated.append(self.link + auction_link)  # added home page url to get full url
-        else:
-            logging.critical("html was empty from %s", self.driver.current_url)
-        self.driver.quit()
+        finally:
+            self.driver.quit()
