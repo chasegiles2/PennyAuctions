@@ -31,6 +31,8 @@ class Auction:
         self.item_name = link_parsed[3]
         self.bid_count = 0
         self.attributes = {
+            'voucher': '',
+            'bidomatic_on': '',
             'winner': None,
             'win_price': None,
             'actual_price': None,
@@ -116,6 +118,11 @@ class Auction:
                         else:
                             actual_price = 0.0
 
+                        if tree.find_class('tooltip-bottom voucher-on'):
+                            self.attributes['voucher'] = tree.find_class('tooltip-bottom voucher-on')[0].text_content()
+                        if tree.find_class('tooltip-bottom bidomatic-on'):
+                            self.attributes['bidomatic_on'] = True
+
                         self.attributes['winner'] = winner
                         self.attributes['win_price'] = final_price
                         self.attributes['actual_price'] = actual_price
@@ -133,13 +140,13 @@ class Auction:
 
                     # find the lock state
                     if tree.xpath('//div[contains(@class, "tooltip-bottom locked big") and contains(@style, "display: block;")]'):
-                        lock_state = 'locked'
+                        lock_state = True
                     else:
-                        lock_state = 'unlocked'
+                        lock_state = False
 
-                    # find the bid-history table and take only the last 6 records
+                    # find the bid-history table and take 8 records
                     bid_history_table = tree.get_element_by_id('bid-history')
-                    bids = bid_history_table.xpath('.//tr')[:6]
+                    bids = bid_history_table.xpath('.//tr')[:8]
 
                     # loop through the records in reverse order
                     for x in bids[::-1]:
@@ -225,7 +232,8 @@ class Auction:
         csv_buffer = StringIO()
         writer = csv.writer(csv_buffer, delimiter=',')
         writer.writerow([self.auction_id, self.item_id, self.item_name, self.link,
-                         self.attributes['winner'], self.attributes['win_price'], self.attributes['actual_price']])
+                         self.attributes['winner'], self.attributes['win_price'], self.attributes['actual_price'],
+                         self.attributes['voucher'], self.attributes['bidomatic_on']])
 
         key = 'auctions/' + str(reverse_number(int(self.auction_id))) + '.csv'
         body = csv_buffer.getvalue()

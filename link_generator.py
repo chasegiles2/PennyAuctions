@@ -67,7 +67,7 @@ class LinkGenerator:
                 seconds_remaining = get_sec(auction.xpath('.//h2[contains(@class, "time bold")]')[0].text_content())
 
                 if seconds_remaining is not None: # auction could be ended and not displaying a time
-                    if (current_price > 0 and current_price < 0.05) or (seconds_remaining >= (20) and seconds_remaining <= (60 * 4)):
+                    if (current_price > 0 and current_price < 0.05) or (seconds_remaining >= (20) and seconds_remaining <= (60 * 10)):
                         self.links_generated.append(self.link + auction_link)  # added home page url to get full url
         finally:
             self.driver.quit()

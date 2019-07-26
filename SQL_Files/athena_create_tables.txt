@@ -1,0 +1,45 @@
+--s3 table creation
+
+CREATE EXTERNAL TABLE `auction`(
+  `auction_id` int, 
+  `item_id` string, 
+  `item_name` string, 
+  `link` string, 
+  `winner` string, 
+  `win_price` decimal(10,2), 
+  `actual_price` decimal(10,2), 
+  `voucher` string, 
+  `bidomatic_on` boolean)
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY ',' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  's3://38783070318518296997/auctions'
+TBLPROPERTIES (
+  'has_encrypted_data'='false', 
+  'transient_lastDdlTime'='1563929956')
+  
+
+CREATE EXTERNAL TABLE `bid_history`(
+  `auction_id` int, 
+  `bid_number` int, 
+  `bidder` string, 
+  `price` decimal(10,2), 
+  `bid_method` string, 
+  `auction_time` int, 
+  `retrieval_time` timestamp, 
+  `lock_state` boolean)
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY ',' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  's3://38783070318518296997/bid_history'
+TBLPROPERTIES (
+  'has_encrypted_data'='false', 
+  'transient_lastDdlTime'='1563929997')
