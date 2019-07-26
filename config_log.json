@@ -3,7 +3,7 @@
 	"formatters": {
 		"detailed": {
 			"class": "logging.Formatter",
-			"format": "%(asctime)s %(name)-15s %(levelname)-8s %(process)d %(processName)-10s %(message)s"
+			"format": "%(asctime)s %(name)-15s %(levelname)-8s %(process)-8d %(processName)-30s %(message)s"
 		}
 	},
 	"handlers": {
@@ -16,6 +16,7 @@
 			"class": "logging.FileHandler",
 			"filename": "auctions.log",
 			"mode": "w",
+			"level": "INFO",
 			"formatter": "detailed"
 		},
 		"errors": {

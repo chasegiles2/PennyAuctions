@@ -76,8 +76,8 @@ class Auction:
             self.driver.get(self.link)
             logging.debug("Web page opened for auction: %s", self.auction_id)
         except Exception as e:
-            logging.critical("error opening site: %s", self.link)
-            logging.critical(e)
+            logging.error("error opening site: %s", self.link)
+            logging.error(e)
         
         # store the previous auction time each loop
         #   solves issue where the time would switch back to 10 seconds before new bid shows in history table
@@ -95,7 +95,7 @@ class Auction:
             current_time = time.time()
             if seconds_till_refresh < (current_time - start_time):
                 self.driver.refresh()
-                logging.info("Auction Page refreshed")
+                logging.info("Auction Page refreshed for auction: %s", self.auction_id)
                 # add additional time onto seconds_till_refresh because start_time is static
                 seconds_till_refresh = seconds_till_refresh + random.randint(refresh_lower_bound, refresh_upper_bound)
 
@@ -178,7 +178,7 @@ class Auction:
                     sleep_time = 0.9 - performance_time # want to check at least once per second
                 else:
                     sleep_time = 0
-                logging.debug("Performance,Sleep: " + str(performance_time) + ',' + str(sleep_time))
+                logging.debug("Performance,Sleep: %s,%s",str(performance_time),str(sleep_time))
                 time.sleep(sleep_time)
 
             except AttributeError as e:
@@ -189,14 +189,13 @@ class Auction:
                 logging.error(e.with_traceback())
 
     def store_bid_history_to_csv(self, path):
-        # stores all information including all past bids into a csv file        
-        logging.info("start writing bid_history to csv")
+        # stores all information including all past bids into a csv file
         with open(path + self.auction_id + '_bids' + '.csv', mode='w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             for bid in self.attributes['bid_history']:
                 writer.writerow([self.auction_id, bid['bid_number'], bid['bidder'], bid['price'], bid['bid_method'],
                                  bid['seconds_remaining'], bid['retrieval_time'], bid['lock_state']])
-        logging.info("end writing bid_history to csv")
+        logging.info("Bid history written to local csv for auction: %s", self.auction_id)
 
     def store_to_s3(self, bucket):
         # stores two files to s3 (auction and bid_history)
@@ -211,8 +210,6 @@ class Auction:
         s3_resource = boto3.resource('s3')  # boto3 requires aws configuration on local machine
 
         # write bid_history
-        logging.info("start writing bid_history to S3")
-
         csv_buffer = StringIO()
         writer = csv.writer(csv_buffer, delimiter=',')
         for bid in self.attributes['bid_history']:
@@ -224,11 +221,7 @@ class Auction:
         s3_resource.Bucket(bucket).put_object(Key=key, Body=body)
         csv_buffer.close()
 
-        logging.info("end writing bid_history to S3")
-
         # write auction
-        logging.info("start writing auction to S3")
-
         csv_buffer = StringIO()
         writer = csv.writer(csv_buffer, delimiter=',')
         writer.writerow([self.auction_id, self.item_id, self.item_name, self.link,
@@ -240,7 +233,7 @@ class Auction:
         s3_resource.Bucket(bucket).put_object(Key=key, Body=body)
         csv_buffer.close()
 
-        logging.info("end writing auction to S3")
+        logging.info("Auction and bid history info written to s3 for auction: %s", self.auction_id)
 
     # def store(self, host, name, user, password):
     #     # stores all information including all past bids into a database

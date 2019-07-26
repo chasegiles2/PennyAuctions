@@ -46,22 +46,21 @@ class LinkGenerator:
             agent = self.driver.execute_script("return navigator.userAgent")
             logging.debug("Agent is: %s", str(agent))
         except Exception as e:
-            logging.critical("error opening site: %s", self.link)
-            logging.critical(e)
+            logging.error("error opening site: %s", self.link)
+            logging.error(e)
 
         logging.info("Generating links at %s", self.driver.current_url)
 
         try:
             html_string = self.driver.page_source
         except Exception as e:
-            logging.critical("html was empty from %s", self.driver.current_url)
+            logging.error("html was empty from %s", self.driver.current_url)
         else:
             tree = html.document_fromstring(html_string)
 
             auction_spots = tree.xpath('//div[contains(@class, "auction-item-wrapper normal")]')
             for auction in auction_spots:
                 auction_link = auction.xpath('.//a')[0].get('href')
-                logging.debug("Auction link found: %s", auction_link)
 
                 current_price = float(auction.xpath('.//h3')[0].text_content().strip()[1:])
                 seconds_remaining = get_sec(auction.xpath('.//h2[contains(@class, "time bold")]')[0].text_content())
@@ -69,5 +68,6 @@ class LinkGenerator:
                 if seconds_remaining is not None: # auction could be ended and not displaying a time
                     if (current_price > 0 and current_price < 0.05) or (seconds_remaining >= (20) and seconds_remaining <= (60 * 10)):
                         self.links_generated.append(self.link + auction_link)  # added home page url to get full url
+                        logging.debug("Auction link added: %s, Current Price: %s, Seconds Remaining: %s", auction_link, current_price, seconds_remaining)
         finally:
             self.driver.quit()

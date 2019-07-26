@@ -57,9 +57,10 @@ def update_queue(worker_queue, inserted_list, config):
         except ValueError:
             worker_queue.put(link)
             inserted_list.append(link)
-            logging.debug("Item inserted added to worker_queue: " + link)
+            logging.debug("Item added to worker_queue: " + link)
             i += 1
-    logging.info(str(i) + " new items inserted into worker_queue")
+    if i != 0:
+        logging.info(str(i) + " new items inserted into worker_queue")
 
 
 def logger_thread(log_queue):
@@ -95,17 +96,18 @@ def main():
         update_queue(worker_queue, inserted_list, config)
 
         random_int = random.randint(25, 90)
-        logging.info("sleep for %s seconds", str(random_int))
+        logging.info("Sleep for %s seconds", str(random_int))
         time.sleep(random_int)
 
-        logging.info("Current worker queue size: " + str(worker_queue.qsize()))
+        if worker_queue.qsize() > 0:
+            logging.warning("Current worker queue size: " + str(worker_queue.qsize()))
         # cleanup completed queue
         while not completed_queue.empty():
             # empty() is not reliable but this is ok in this situation
             # worst case scenario is we think it is empty but its actually not, we would just cleanup on the next pass
             item = completed_queue.get()
             inserted_list.remove(item)
-            logging.info("Removed item from completed_queue and inserted_list: " + item)
+            logging.debug("Removed item from completed_queue and inserted_list: " + item)
 
 
 if __name__ == '__main__':
