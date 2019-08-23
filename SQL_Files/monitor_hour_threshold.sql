@@ -1,5 +1,8 @@
 Create or replace view auctions.monitor_hour_threshold as
---use this query to set the threshold by hour for the monitoring
+/*
+use this query to set the threshold by hour for the monitoring
+suggest to add 5 minutes to the max result and use that in the monitoring script
+*/
 Select auction_hour, min(difference), avg(difference), max(difference) from
 (
 	Select 
