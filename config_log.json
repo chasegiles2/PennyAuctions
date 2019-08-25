@@ -31,4 +31,4 @@
                 "level": "DEBUG",
                 "handlers": ["console", "file", "errors"]
         }
-)
+}
