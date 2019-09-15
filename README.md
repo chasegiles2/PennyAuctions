@@ -57,7 +57,9 @@ default region = us-east-1
 ```
 
 (Optional) Adjust config.json
+
 (Optional) Adjust server time to match current timezone
+
 (Optional) Add memory monitoring bash script and schedule with crontab
 ```
 echo "$(date '+%Y-%m-%d %H:%M:%S') $(free -m | grep Mem: | sed 's/Mem://g')" >> memory_usage.log
