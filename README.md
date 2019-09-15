@@ -53,9 +53,19 @@ sudo pip3 install awscli --upgrade --user
 Configure boto3 with aws cli
 ```
 !!!Example needed!!!
+default region = us-east-1
 ```
 
+(Optional) Adjust config.json
 (Optional) Adjust server time to match current timezone
+(Optional) Add memory monitoring bash script and schedule with crontab
+```
+echo "$(date '+%Y-%m-%d %H:%M:%S') $(free -m | grep Mem: | sed 's/Mem://g')" >> memory_usage.log
+```
+```
+*/1 * * * * /home/centos/memory_usage.sh
+```
+
 
 ## Deployment
 
