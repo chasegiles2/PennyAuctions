@@ -114,7 +114,7 @@ SQL to create stored procedure sp_clean_auctions in Postgres. This procedure rem
 
 ### Config Files
 
-#### config.json: This file contains the follwing parameters:
+#### config.json - this file contains the follwing parameters:
 - number_of_workers: more workers (processes) enabled requires more CPU but increases the probability of capturing all auctions
 - link_generator_home_url: the base url where auction links are generated from
 - chrome_driver_path: file path to the installed chrome driver
@@ -125,7 +125,25 @@ SQL to create stored procedure sp_clean_auctions in Postgres. This procedure rem
 #### config_log.json
 
 determines logging settings
-	
+
+
+### Python Files
+
+#### auction.py
+
+Creates the Auction class which is used to store auction attributes (including bids), watch an auction (collect bids), and store the auctions results.
+
+#### link_generator.py
+
+Generates links from a given URL that the Auction class can conusme.
+
+#### main.py
+
+Runs the auction scraper utilizing link_generator.py to create links to send to the Auction class from auctions.py. This will start the multiprocessing workers and logger threads. The works wait for an available link before creating an instance of the Auction class.
+
+#### s3_monitoring.py
+
+Monitors s3 for the latest file creation dates. This will start a new instance on EC2 if the threshold is exceeded. Currently executed as a lambda function a schedule.
 
 ## Versioning
 

@@ -2,6 +2,7 @@ import boto3
 import time
 from datetime import datetime, timedelta
 
+
 def get_seconds_threshold(hour):
     # returns the seconds threshold based on the hour of day
     thresholds = {
@@ -18,38 +19,35 @@ def start_new_instance():
         LaunchTemplate={
             'LaunchTemplateName': 'centos7_auctions_with_startup'
         },
-        MaxCount = 1,
-        MinCount = 1
+        MaxCount=1,
+        MinCount=1
     )
     print("instance launched!!!")
 
 
-timezone_adjustment_seconds = 18000 # 5 hours
+# timezone_adjustment_seconds = 18000 # 5 hours
+timezone_adjustment_seconds = 0  # 5 hours
 
 s3_resource = boto3.resource('s3')  # boto3 requires aws configuration on local machine
 bucket = s3_resource.Bucket(str(38783070318518296997))
 
-while True:
-    current_timestamp = time.time()
-    hour = datetime.now().hour
-    seconds_threshold = get_seconds_threshold(hour)
+current_timestamp = time.time()
+hour = datetime.now().hour
+seconds_threshold = get_seconds_threshold(hour)
 
-    object_total_counter = 0
-    main_script_failed = True
+object_total_counter = 0
+main_script_failed = True
 
-    for object in bucket.objects.all():
-        object_total_counter += 1
-        object_timestamp = time.mktime(time.strptime(str(object.last_modified).split("+")[0], "%Y-%m-%d %H:%M:%S"))
-        object_timestamp = object_timestamp - timezone_adjustment_seconds
-        difference = current_timestamp - object_timestamp
-        if seconds_threshold > int(difference):
-            print("Main script is still running!")
-            main_script_failed = False
-            break
-    print(object_total_counter)
-
-    if main_script_failed:
-        start_new_instance()
+for object in bucket.objects.all():
+    object_total_counter += 1
+    object_timestamp = time.mktime(time.strptime(str(object.last_modified).split("+")[0], "%Y-%m-%d %H:%M:%S"))
+    object_timestamp = object_timestamp - timezone_adjustment_seconds
+    difference = current_timestamp - object_timestamp
+    if seconds_threshold > int(difference):
+        # print("Main script is still running!")
+        main_script_failed = False
         break
+print("Total objects scanned: " + str(object_total_counter))
 
-    time.sleep(600)
+if main_script_failed:
+    start_new_instance()
