@@ -82,6 +82,31 @@ You could also create a crontab job
 * * * * * scl enable rh-python36 'python /home/centos/main.py'
 ```
 
+
+## File Descriptions
+
+### SQL Files Folder
+
+- athena_create_tables.txt: Create table SQL for use with Athena querying S3. These tables will have the same structure as exists in the Postgres.
+- auction_summary.sql: SQL to create auction_summary view in Postgres. This view displays calculated features at the grain of one auction per row.
+- audit_missing_bids.sql: SQL to create audit_missing_bids view in Postgres. This view displays the number of bids that were not captured in an auction.
+- create_tables.sql: Create table SQL for postgres. One table to capture auction level attributes and another to hold the bids captured for all auctions.
+- monitor_hour_threshold.sql: SQL to create monitor_hour_threshold view in Postgres. This view displays the expected latency of on S3 based on the hour of day. This information is used in the S3 monitoring script to detect failure.
+- sp_clean_auctions.sql: SQL to create stored procedure sp_clean_auctions in Postgres. This procedure removes duplicate bids captured when there is overlap from multiple instances running.
+
+### Config Files
+
+- config.json: This file contains the follwing parameters:
+	- number_of_workers: more workers (processes) enabled requires more CPU but increases the probability of capturing all auctions
+	- link_generator_home_url: the base url where auction links are generated from
+	- chrome_driver_path: file path to the installed chrome driver
+	- csv: if active is set to true it enables local csv storage, path determines the file path of the created csv
+	- s3: if active is set to true it enables storage to s3 (recommended), bucket defines which s3 bucket is used
+	- database: if active is set to true it enables storage to postgres, connection details are required if active
+
+- config_log.json: determines logging settings
+	
+
 ## Versioning
 
 Use [SemVer](http://semver.org/) for inspiration
