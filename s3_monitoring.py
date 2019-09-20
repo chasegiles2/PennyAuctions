@@ -14,15 +14,24 @@ def get_seconds_threshold(hour):
 
 
 def start_new_instance():
-    ec2 = boto3.resource('ec2')
-    instances = ec2.create_instances(
-        LaunchTemplate={
-            'LaunchTemplateName': 'centos7_auctions_with_startup'
-        },
-        MaxCount=1,
-        MinCount=1
-    )
-    print("instance launched!!!")
+    ec2Client = boto3.client('ec2')
+    response = ec2Client.describe_instance_status()
+    responseList = response['InstanceStatuses']
+    responseListLength = len(responseList)
+    print("Current number of instances: " + str(responseListLength))
+
+    if responseListLength <= 3:
+        ec2 = boto3.resource('ec2')
+        instances = ec2.create_instances(
+            LaunchTemplate={
+                'LaunchTemplateName': 'centos7_auctions_with_startup'
+            },
+            MaxCount=1,
+            MinCount=1
+        )
+        print("New instance launched")
+    else:
+        print("Maximum instances reached, instance not launched")
 
 
 # timezone_adjustment_seconds = 18000 # 5 hours
@@ -50,4 +59,7 @@ for object in bucket.objects.all():
 print("Total objects scanned: " + str(object_total_counter))
 
 if main_script_failed:
+    print("Launching new instance: Latest modified S3 files are out of date")
     start_new_instance()
+else:
+    print("No action taken: Latest modified S3 files are within threshold")
