@@ -143,7 +143,7 @@ Runs the auction scraper utilizing link_generator.py to create links to send to 
 
 #### s3_monitoring.py
 
-Monitors s3 for the latest file creation dates. This will start a new instance on EC2 if the threshold is exceeded. Currently executed as a lambda function a schedule.
+Monitors s3 for the latest file creation dates. This will start a new instance on EC2 if the threshold is exceeded. Utilizes a launch template with user data input to automatically start main.py. Currently executed as a lambda function a schedule.
 
 ## Versioning
 
