@@ -1,19 +1,27 @@
-Create or replace view auctions.monitor_hour_threshold as
-/*
-use this query to set the threshold by hour for the monitoring
-suggest to add 5 minutes to the max result and use that in the monitoring script
-*/
-Select auction_hour, min(difference), avg(difference), max(difference) from
-(
-	Select 
-	auction_time,
-	extract(HOUR from auction_time) as auction_hour,
-	auction_time - lag(auction_time) over (order by auction_time) as difference from
-	(
-	Select max(retrieval_time) as auction_time from auctions.bid_history
-	Group by auction_id
-	Order by max(retrieval_time)
-	) auction_end
-) y
-Where difference < '06:00:00' --removes outliers caused by outages
-Group by auction_hour
+-- View: auctions.monitor_hour_threshold
+
+-- DROP VIEW auctions.monitor_hour_threshold;
+
+CREATE OR REPLACE VIEW auctions.monitor_hour_threshold AS
+ SELECT y.auction_hour,
+    min(y.difference) AS min,
+    avg(y.difference) AS avg,
+    max(y.difference) AS max,
+	extract(hour FROM max(y.difference))*3600 + extract(minute FROM max(y.difference))*60 + extract(second FROM max(y.difference)) AS max_seconds
+   FROM ( SELECT auction_end.auction_time,
+		
+			  
+            date_part('hour'::text, auction_end.auction_time) AS auction_hour,
+            auction_end.auction_time - lag(auction_end.auction_time) OVER (ORDER BY auction_end.auction_time) AS difference
+           FROM ( SELECT max(bid_history.retrieval_time) AS auction_time
+                   FROM auctions.bid_history
+                  GROUP BY bid_history.auction_id
+                  ORDER BY (max(bid_history.retrieval_time))) auction_end) y
+			  
+   
+  WHERE y.difference < '06:00:00'::interval
+  GROUP BY y.auction_hour;
+
+ALTER TABLE auctions.monitor_hour_threshold
+    OWNER TO auction_user;
+
