@@ -20,7 +20,9 @@ TABLESPACE pg_default;
 ALTER TABLE auctions.auction
     OWNER to auction_user;
 
-
+--after load
+ALTER TABLE auctions.auction ADD PRIMARY KEY (auction_id);
+	
 CREATE TABLE auctions.bid_history
 (
     auction_id integer,
@@ -39,3 +41,6 @@ TABLESPACE pg_default;
 
 ALTER TABLE auctions.bid_history
     OWNER to auction_user;
+	
+--after load
+ALTER TABLE auctions.bid_history ADD PRIMARY KEY (auction_id,price);

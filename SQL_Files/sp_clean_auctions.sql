@@ -49,4 +49,31 @@ Delete From auctions.bid_history Where auction_id in
 )
 ;
 
+/*
+Remove auctions where there were missing bids
+*/
+Delete From auctions.auction Where auction_id in
+(
+	Select auction_id from auctions.audit_missing_bids
+)
+;
+
+Delete From auctions.bid_history Where auction_id in
+(
+	Select auction_id from auctions.audit_missing_bids
+)
+;
+
+/*
+Update auction winner where it was not captured
+*/
+Update auctions.auction
+Set winner = 
+(
+    Select h.bidder from auctions.bid_history h 
+    where auction.auction_id = h.auction_id and auction.win_price = h.price
+)
+Where winner = '  ' --character/spacing had to be copied and pasted from results
+;
+
 $$;
