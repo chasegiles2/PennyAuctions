@@ -1,4 +1,4 @@
-create view auctions.auction_summary as
+create or replace view auctions.auction_summary as
 with s as
 (
 	Select
@@ -38,8 +38,10 @@ a.*,
 s.min_retrieval_time,
 s.max_retrieval_time,
 s.duration,
-case when l.price_when_locked is null then False else True end as auction_locked,
+EXTRACT(HOUR from s.duration)*3600 + EXTRACT(MINUTE from s.duration)*60 + EXTRACT(SECOND from s.duration) as duration_seconds,
+case when l.price_when_locked is null then False else True end as is_auction_locked,
 (s.max_retrieval_time - l.retrieval_time_when_locked) as duration_when_locked,
+EXTRACT(HOUR from (s.max_retrieval_time - l.retrieval_time_when_locked))*3600 + EXTRACT(MINUTE from (s.max_retrieval_time - l.retrieval_time_when_locked))*60 + EXTRACT(SECOND from (s.max_retrieval_time - l.retrieval_time_when_locked)) as duration_when_locked_seconds,
 l.price_when_locked,
 s.count_total_bids,
 s.count_single_bid,
